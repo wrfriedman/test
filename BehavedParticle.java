@@ -131,10 +131,11 @@ public class BehavedParticle extends Particle
 	// Channel-specific parameters
 	public HashMap<Integer, Double> channelLambda = new HashMap<Integer, Double>();
 	public HashMap<Integer, Double> channelOmega = new HashMap<Integer, Double>();
-    public HashMap<Integer, Double> channelSwimSpeed = new HashMap<Integer, Double>();
+    public HashMap<Integer, Double> channelMeanSwimSpeed = new HashMap<Integer, Double>();
     public HashMap<Integer, Double> channelHoldThr = new HashMap<Integer, Double>();
     public HashMap<Integer, Double> channelConstProbConfusion = new HashMap<Integer, Double>();
     public HashMap<Integer, Double> channelDaytimeSwimProb = new HashMap<Integer, Double>();
+    public HashMap<Integer, Double> channelStdSwimSpeed = new HashMap<Integer, Double>();
 	
 	// mortality parameters
 	Random generator = new Random();
@@ -171,7 +172,6 @@ public class BehavedParticle extends Particle
 		try
 		{
 			swimCode = reader.readInt("swimCode");
-			stdSwimSpeed = reader.readFloat("stdSwimSpeed");
 			filterK = reader.readFloat("filterK");
 			holdThr = reader.readFloat("holdThr"); //NA
 			daytimeSwimProb = reader.readFloat("daytimeSwimProb"); // NA
@@ -215,20 +215,22 @@ public class BehavedParticle extends Particle
             // 0: channel
             // 1: lambda
             // 2: omega
-            // 3: swimSpeed
+            // 3: meanSwimSpeed
 			// 4: HoldThr
 			// 5: ConstProbConfusion
 			// 6: daytimeSwimProb
+			// 7: stdSwimSpeed
 			
 			channelPars = reader.readDoubleMatrix("channelPars");
 			for(int i=0; i<channelPars.length; i++)
 			{
 				channelLambda.put((int)Math.floor(channelPars[i][0]), channelPars[i][1]);
 				channelOmega.put((int)Math.floor(channelPars[i][0]), channelPars[i][2]);
-                channelSwimSpeed.put((int)Math.floor(channelPars[i][0]), channelPars[i][3]);
+                channelMeanSwimSpeed.put((int)Math.floor(channelPars[i][0]), channelPars[i][3]);
                 channelHoldThr.put((int)Math.floor(channelPars[i][0]), channelPars[i][4]);
                 channelConstProbConfusion.put((int)Math.floor(channelPars[i][0]), channelPars[i][5]);
                 channelDaytimeSwimProb.put((int)Math.floor(channelPars[i][0]), channelPars[i][6]);
+                channelStdSwimSpeed.put((int)Math.floor(channelPars[i][0]), channelPars[i][7]);
 			}
 			
 			ChippsPassCount = 0;
@@ -246,7 +248,7 @@ public class BehavedParticle extends Particle
 			if(!echoedSetpoints)
 			{
 				System.out.println("swimCode = " + swimCode + 
-						", stdSwimSpeed=" + stdSwimSpeed + ", variableSwimSpeed=" + variableSwimSpeed +
+						", variableSwimSpeed=" + variableSwimSpeed +
 						", velDecisionPeriod=" + velDecisionPeriod + 
 						", constProbConfusion = " + constProbConfusion +
 						", slopeProbConfusion=" + slopeProbConfusion +
@@ -259,7 +261,6 @@ public class BehavedParticle extends Particle
 						", checkpoints = " + Arrays.toString(checkpoints) + ", immortal=" + immortal);
 				
 				writer.writeInt("swimCode", swimCode);
-				writer.writeFloat("stdSwimSpeed", stdSwimSpeed);
 				writer.writeBoolean("variableSwimSpeed", variableSwimSpeed);
 				writer.writeInt("velDecisionPeriod", velDecisionPeriod);
 				writer.writeFloat("constProbConfusion", constProbConfusion);
@@ -292,11 +293,12 @@ public class BehavedParticle extends Particle
 		// Initialize the swimSpeed to 0.0 just to be safe
 		swimSpeed = 0.0f;
 		meanSwimSpeed = 0.0f;
+		stdSwimSpeed = 0.0f;
 		epsSwimSpeed = 0.0f;
 		
 		// Write the realized swimSpeed for each particle to the output file, but 
-		// only do this if stdSwimSpeed>0 and variableSwimSpeed==false
-		if(stdSwimSpeed>0 && variableSwimSpeed==false)
+		// only do this if variableSwimSpeed==false
+		if(variableSwimSpeed==false)
 		{
 			writer.writeFloat("swimSpeed/particleNum/" + Integer.toString(this.getId()), swimSpeed);
 		}	
@@ -1041,7 +1043,8 @@ public class BehavedParticle extends Particle
         
 		if(wb instanceof SmartChannel)
 		{
-			meanSwimSpeed = channelSwimSpeed.get(wb.getEnvIndex()).floatValue();
+			meanSwimSpeed = channelMeanSwimSpeed.get(wb.getEnvIndex()).floatValue();
+			stdSwimSpeed = channelStdSwimSpeed.get(wb.getEnvIndex()).floatValue();
 			holdThr = channelHoldThr.get(wb.getEnvIndex()).floatValue();
 			constProbConfusion = channelConstProbConfusion.get(wb.getEnvIndex()).floatValue();
 			daytimeSwimProb = channelDaytimeSwimProb.get(wb.getEnvIndex()).floatValue();

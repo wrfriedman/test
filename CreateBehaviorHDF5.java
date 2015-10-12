@@ -406,7 +406,7 @@ public class CreateBehaviorHDF5
 		String line;
 		String[] values;
 		int index;
-		double[][] cP = new double[numberOfChannels + numberOfReservoirs][7];
+		double[][] cP = new double[numberOfChannels + numberOfReservoirs][8];
 		
 		try
 		{
@@ -424,6 +424,7 @@ public class CreateBehaviorHDF5
 				// 4: holdThr
 				// 5: constProbConfusion
 				// 6: daytimeSwimProb
+				// 7: stdSwimSpeed
 				values = line.split(",");
 				cP[index][0] = Integer.parseInt(values[0]);
 				cP[index][1] = Double.parseDouble(values[1]);
@@ -432,6 +433,7 @@ public class CreateBehaviorHDF5
 				cP[index][4] = Double.parseDouble(values[4]);
 				cP[index][5] = Double.parseDouble(values[5]);
 				cP[index][6] = Double.parseDouble(values[6]);
+				cP[index][7] = Double.parseDouble(values[7]);
 				index++;
 			}
 			bReader.close();
